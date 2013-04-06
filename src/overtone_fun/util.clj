@@ -4,4 +4,4 @@
 
 (definst beep [note 60]
   (* (sin-osc (midicps note))
-     (env-gen (perc 0.1 0.4) :action FREE)))
+     (env-gen (perc 0.05 0.15) :action FREE)))
