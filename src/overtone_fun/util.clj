@@ -41,6 +41,6 @@
 
 
 (defn buf->partials [buf]
-  (let [b (map int (buffer-read buf))
-        b (map )]
-    (filter (comp not nil?) b)))
+  (->> (buffer-read buf)
+       (map int)
+       (binvec->idxs)))
