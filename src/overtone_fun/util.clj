@@ -1,46 +1,33 @@
 (ns overtone-fun.util
     (:use [overtone.live]
-          [overtone.inst.synth]))
+          [overtone.inst.synth]
+;          [clojure.core.async]
+          ))
 
 (defn take-rand [coll n]
   (take n (shuffle coll) ))
 
-#_(def default-buf (buffer 8))
-#_(buffer-write! default-buf 0 [17 17 17 17])
+(defn p-val
+  [[p v]]
+  (when (= 1 p) v))
 
-(int (first (buffer-read def-buf 0 1)))
-
-#_(definst beep [note 60 partials-buffer def-buf]
+(definst beep-partial
+  [note 60 p1 1 p2 0 p3 0 p4 0 p5 0 p6 0 p7 0 p8 0]
   (*
-   (let [partials (buffer-read)
-         f (midicps note)
-         oscs (for [p partials]
-                (sin-osc (* f p)))]
-     (apply + oscs))
+   (let [f (midicps note)
+
+         partials (->> [p1 p2 p3 p4 p5 p6 p7 p8]
+                       ;; todo - change range to something more interesting
+                       (map vector (range 1 9)))
+         oscs (for [[p v] partials]
+                (* v (sin-osc (* f p))))]
+        (apply + oscs))
    (env-gen (perc 0.01 0.35) :action FREE)))
 
-#_(beep)
+(defn foo
+  []
+  (let [t (now)]
+    (at t (beep-partial))
+    (apply-at (+ 1000 t) #'foo [])))
 
-(defn idxs->binvec [idxs]
-  (let [idxs (set (sort idxs))
-        size (+ 1 (last idxs))]
-   (map (fn [i] (if (contains? idxs i) 1 0)) (range size))))
-
-(defn binvec->idxs [b]
-  (->>
-   (map (fn [i] (when (= 1 (nth b i)) i)) (range (count b)))
-   (filter (comp not nil?))))
-
-(defn partials->buf [partials]
-  (let [size (last (sort partials))
-        buf-vec (idxs->binvec partials)
-        buf (buffer (count buf-vec))]
-    (dosync
-     (buffer-write! buf 0 buf-vec)
-     buf)))
-
-
-(defn buf->partials [buf]
-  (->> (buffer-read buf)
-       (map int)
-       (binvec->idxs)))
+(beep-partial 60 1 1 0 1)
