@@ -18,16 +18,28 @@
 
          partials (->> [p1 p2 p3 p4 p5 p6 p7 p8]
                        ;; todo - change range to something more interesting
-                       (map vector (range 1 9)))
+                       (map vector (range 1 9 0.5)))
          oscs (for [[p v] partials]
                 (* v (sin-osc (* f p))))]
         (apply + oscs))
    (env-gen (perc 0.01 0.35) :action FREE)))
 
 (defn foo
-  []
-  (let [t (now)]
-    (at t (beep-partial))
-    (apply-at (+ 1000 t) #'foo [])))
+  [notes partials]
+  (let [t (now)
+        args (cons (first notes) (first partials))]
+    (apply beep-partial args)
+    (apply-at (+ 500 t) #'foo [(rest notes) (rest partials)])))
 
-(beep-partial 60 1 1 0 1)
+(def test1 {:partials [[1 0 0.1 0]
+                       [1 0.3 0 0]
+                       [1 0 0.5 0]
+                       [1 0 0 0.2]]
+            :notes [60 62 65 67]})
+
+(foo (apply concat (repeat (:notes test1))) (apply concat (repeat (:partials test1))))
+
+#_(apply beep-partial [60 1 1 0 0])
+
+
+; (stop)
