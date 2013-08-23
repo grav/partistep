@@ -31,15 +31,27 @@
     (apply beep-partial args)
     (apply-at (+ 500 t) #'foo [(rest notes) (rest partials)])))
 
-(def test1 {:partials [[1 0 0.1 0]
-                       [1 0.3 0 0]
-                       [1 0 0.5 0]
-                       [1 0 0 0.2]]
+(def test1 {:partials
             :notes [60 62 65 67]})
 
-(foo (apply concat (repeat (:notes test1))) (apply concat (repeat (:partials test1))))
+(def partials (atom [[1 0 0.1 0]
+                     [1 0.3 0 0]
+                     [1 0 0.5 0]
+                     [1 0 0 0.2]]))
 
-#_(apply beep-partial [60 1 1 0 0])
+(def notes (atom [60 62 65 67]))
+
+(foo (apply concat (repeatedly (fn [] @notes))) (apply concat (repeatedly (fn [] @partials))))
+
+(reset! notes [60 62 65 67])
+(swap! notes reverse)
+
+(reset! partials [[1 0 0.1 1]
+                  [1 0.3 0.4 0]
+                  [0 1.0 0.5 0]
+;                  [1 0 0 0.2]
+                  ])
+
 
 
 ; (stop)
