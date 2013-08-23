@@ -44,30 +44,31 @@
                      [1 0 0.5 0]
                      [1 0 0 0.2]]))
 
-;; either set the notes directly
-(reset! notes [60 62 65 67])
-;; or apply a function on existing notes
-(swap! notes reverse)
+ ;; here, we just deref our atoms
+ (defn make-notes
+   [] @notes)
 
-;; wow - polyrhythm
-(reset! partials [[1 0 0.1 1]
-                  [1 0.3 0.4 0]
-                  [0 1.0 0.5 0]])
+ (defn make-partials
+   [] @partials)
 
-;; here, we just deref our atoms
-(defn make-notes
-  [] @notes)
-
-(defn make-partials
-  [] @partials)
-
-;; but we can also do other stuff like randomness
-(defn make-partials
-  []
-  [(map #(* % 0.5 (rand)) (repeat 4 1))])
 
 ;; === Let's have some sound
-; (foo (apply concat (repeatedly make-notes)) (apply concat (repeatedly make-partials)))
+;; using #'make-partials allows us to redefine it (below)
+(foo (apply concat (repeatedly make-notes)) (apply concat (repeatedly #'make-partials)))
 
 ;; === Let's not
-; (stop)
+;; (stop)
+
+(comment  ;; apply a function on existing params
+ (swap! notes reverse)
+
+ ;; or set them to new values
+ ;; wow - polyrhythm
+ (reset! partials [[1 0 0.1 1]
+                   [1 0.3 0.4 0]
+                   [0 1.0 0.5 0]])
+
+ ;; we don't need to use constants. How about like randomness?
+ (defn make-partials
+   []
+   [(map #(* % 0.5 (rand)) (repeat 4 1))]))
