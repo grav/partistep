@@ -59,7 +59,8 @@
 ;; === Let's not
 ;; (stop)
 
-(comment  ;; apply a function on existing params
+(comment
+ ;; apply a function on existing params
  (swap! notes reverse)
 
  ;; or set them to new values
