@@ -31,27 +31,43 @@
     (apply beep-partial args)
     (apply-at (+ 500 t) #'foo [(rest notes) (rest partials)])))
 
-(def test1 {:partials
-            :notes [60 62 65 67]})
+
+
+;; ==== Using atoms, we can dynamically set the params
+
+;; atoms with defaults
+
+(def notes (atom [60 62 65 67]))
 
 (def partials (atom [[1 0 0.1 0]
                      [1 0.3 0 0]
                      [1 0 0.5 0]
                      [1 0 0 0.2]]))
 
-(def notes (atom [60 62 65 67]))
-
-(foo (apply concat (repeatedly (fn [] @notes))) (apply concat (repeatedly (fn [] @partials))))
-
+;; either set the notes directly
 (reset! notes [60 62 65 67])
+;; or apply a function on existing notes
 (swap! notes reverse)
 
+;; wow - polyrhythm
 (reset! partials [[1 0 0.1 1]
                   [1 0.3 0.4 0]
-                  [0 1.0 0.5 0]
-;                  [1 0 0 0.2]
-                  ])
+                  [0 1.0 0.5 0]])
 
+;; here, we just deref our atoms
+(defn make-notes
+  [] @notes)
 
+(defn make-partials
+  [] @partials)
 
+;; but we can also do other stuff like randomness
+(defn make-partials
+  []
+  [(map #(* % 0.5 (rand)) (repeat 4 1))])
+
+;; === Let's have some sound
+; (foo (apply concat (repeatedly make-notes)) (apply concat (repeatedly make-partials)))
+
+;; === Let's not
 ; (stop)
