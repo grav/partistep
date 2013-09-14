@@ -36,10 +36,13 @@
 (def tiles (atom (repeat (* w h) 0)))
 
 (defn tile->midinote
+  "Given an index of a square pad,
+   return the corresponding midi note."
   [n]
   (+ n (* 8 (int (/ n 8)))))
 
 (defn show
+  "display tile config on launchpad"
   [tiles]
   (doseq [[v n] (map vector tiles (range))]
     (let [m (tile->midinote n)]
@@ -58,14 +61,18 @@
     (.send (:receiver launch-out) m -1)))
 
 (defn bar
+  "Repeatedly display random colors
+   on the launchpad. Uses double buffering."
   ([]
      (bar true))
   ([buff1?]
      (let [t (now)]
+       ;; select certain buffer
        (send-to-launchpad [0xb0 0x0 (if buff1? 0x31 0x34)])
        (show (repeatedly (* w h) #(bit-and
                                    ;; Launchpad Programmer’s Reference pg. 3:
                                    ;; leaves only color bits intact
+                                   ;; Important regarding dbl buffering
                                    2r0110011 ;
                                    (rand-int 128))))
        (send-to-launchpad [0xb0 0x0 (if buff1? 0x34 0x31)])
