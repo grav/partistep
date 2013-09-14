@@ -18,9 +18,10 @@
 
          partials (->> [p1 p2 p3 p4 p5 p6 p7 p8]
                        ;; todo - change range to something more interesting
-                       (map vector (range 1 9 0.5)))
-         oscs (for [[p v] partials]
-                (* v (sin-osc (* f p))))]
+;                       (map vector (range 1 9 (/ 3 5)))
+                       (map vector (iterate #(* % (/ (+ 1 (Math/sqrt 5)) 2)) f)))
+         oscs (for [[pf v] partials]
+                (* v (sin-osc pf)))]
         (apply + oscs))
    (env-gen (perc 0.01 0.35) :action FREE)))
 
