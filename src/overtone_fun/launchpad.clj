@@ -17,14 +17,6 @@
 
   )
 
-(defn first-kv
-  "Find first element in coll where element's :k is v"
-  [coll k v]
-  (let [fn #(= v (get % k)) ]
-    (->> coll
-        (filter fn)
-        (first))))
-
 (def launch-out
   ;; seems to be necessary in 0.9.0
   (midi-find-connected-receiver #"Launchpad"))
