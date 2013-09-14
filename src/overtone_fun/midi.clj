@@ -53,4 +53,4 @@
   []
   (let [t (now)]
     (show (repeatedly (* w h) #(rand-int 128)))
-    (apply-at (+ 500 t)) #'bar))
+    (apply-at (+ 500 t) #'bar)))
