@@ -1,4 +1,4 @@
-(ns overtone-fun.midi
+(ns overtone-fun.launchpad
   (:require [overtone.midi :as midi])
   (:require [overtone.live :as overtone :refer :all :exclude [buffer]])
   (:require [clojure.core.async :as a])
