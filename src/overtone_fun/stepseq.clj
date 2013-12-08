@@ -18,14 +18,12 @@
      :val  (- 8 (int (/ t 8)))}))
 
 
-(defn update-and-show
-  [new-conf]
-  (l/show @tile-configuration new-conf)
-  (reset! tile-configuration new-conf))
-
 (def my-sequence (atom (vec (repeat 8 0))))
 
-(def tile-configuration (atom (repeat 64 0)))
+(defn update-and-show
+  [new-conf]
+  (l/show (tile-conf @my-sequence) new-conf))
+
 
 ;; returns new sequence that has step p marked
 (defn mark-conf
@@ -39,7 +37,8 @@
 
 (defn player
   [t ns p old-conf]
-  (let [marked-conf (mark-conf @tile-configuration p)]
+  (let [conf (tile-conf @my-sequence)
+        marked-conf (mark-conf conf p)]
     (l/show old-conf marked-conf)
     (when-let [n (get @ns p)]
       (when (not (zero? n))
@@ -50,11 +49,11 @@
           steps (count @ns)]
       (apply-at t' #'player [t' ns (mod (inc p) steps) marked-conf]))))
 
-(player (now) my-sequence 0 @tile-configuration)
+(player (now) my-sequence 0 (tile-conf @my-sequence))
 (stop)
 
 (do
-  (reset! tile-configuration (repeat 64 0))
+  (reset! my-sequence (repeat 8 0))
   (l/reset))
 
 (on-event
