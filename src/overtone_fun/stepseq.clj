@@ -51,10 +51,6 @@
           steps (count @ns)]
       (apply-at t' #'player [t' ns (mod (inc p) steps) marked-conf]))))
 
-(do
-  (reset! my-sequence (vec (repeat 8 0)))
-  (l/reset))
-
 (on-event
  [:midi :note-on]
  (fn [e]
@@ -69,5 +65,9 @@
  ::lanchpad-input-handler)
 
 (comment
+  (do
+    (reset! my-sequence (vec (repeat 8 0)))
+    (l/reset))
+
   (player (now) my-sequence 0 (tile-conf @my-sequence))
   (stop))
