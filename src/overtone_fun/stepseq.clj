@@ -6,10 +6,12 @@
 
 (def val->note [60 62 64 65 67 69 71 72])
 
-(defn tile-conf [s]
+(defn tile-conf-nocache [s]
   (-> (for [i (take 8 (iterate dec 8))]
         (map #(if (= i %) l/green2 0) s))
       (flatten)))
+
+(def tile-conf (memoize tile-conf-nocache))
 
 (defn midinote->step
   [m]
@@ -53,7 +55,7 @@
 (stop)
 
 (do
-  (reset! my-sequence (repeat 8 0))
+  (reset! my-sequence (vec (repeat 8 0)))
   (l/reset))
 
 (on-event
