@@ -8,8 +8,8 @@
 (comment
   ;; debugging
 
-  (connected-midi-receivers)
-  (connected-midi-devices)
+  (midi-connected-receivers)
+  (midi-connected-devices)
 
   (event-debug-on)
 
