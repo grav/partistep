@@ -51,9 +51,6 @@
           steps (count @ns)]
       (apply-at t' #'player [t' ns (mod (inc p) steps) marked-conf]))))
 
-(player (now) my-sequence 0 (tile-conf @my-sequence))
-(stop)
-
 (do
   (reset! my-sequence (vec (repeat 8 0)))
   (l/reset))
@@ -70,3 +67,7 @@
        (let [new-conf (tile-conf @my-sequence)]
          (update-and-show new-conf)))))
  ::lanchpad-input-handler)
+
+(comment
+  (player (now) my-sequence 0 (tile-conf @my-sequence))
+  (stop))
