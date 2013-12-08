@@ -19,13 +19,6 @@
   ;; seems to be necessary in 0.9.0
   (midi-find-connected-receiver #"Launchpad"))
 
-(on-event
- [:midi :note-on]
- (fn [e]
-   (when (< (count @notes) 8)
-     (record-note (:note e))))
- ::lanchpad-input-handler)
-
 ;; dims of launchpad
 (def W 8)
 (def H 8)
@@ -35,6 +28,15 @@
    return the corresponding midi note."
   [n]
   (+ n (* W (int (/ n H)))))
+
+(defn midinote->tile
+  [m]
+  (let [width-multiplier   (int (/ m 2 W))]
+    (+ (mod m W)
+       (* W width-multiplier))))
+
+
+
 
 (defn msg [a b c]
   "Create javax.sound.midi.ShortMessage
@@ -75,14 +77,15 @@
 (defn show
   "display tile config on launchpad. tiles is an array of velocities.
    the mapping from vel to color can be found in the Launchpad Programmer's Reference"
-  [tiles]
+  [old-tiles tiles]
   (swap! buff other-buffer)
   (send-to-launchpad (display-buffer-bytes @buff) )
-  (doseq [[v n] (map vector tiles (range))]
-    (let [m (tile->midinote n)]
-      (if (> v 0)
-        (midi-note-on launch-out m v)
-        (midi-note-off launch-out m))))
+  (doseq [[v1 v2 n] (map vector old-tiles tiles (range))]
+    (when (not= v1 v2)
+      (let [m (tile->midinote n)]
+        (if (> v2 0)
+          (midi-note-on launch-out m v2)
+          (midi-note-off launch-out m)))))
   (send-to-launchpad (display-buffer-bytes (other-buffer @buff))))
 
 
@@ -100,7 +103,7 @@
     (apply-at (+ 200 t) #'disco)))
 
 ;; some useful messages
-(def reset [0xb0 0x0 0x0])
+(def reset-msg [0xb0 0x0 0x0])
 
 (def dblbuff-off [0xb0 0x0 0x30])
 
@@ -113,9 +116,12 @@
 (def red2 2r0000010)
 (def red3 2r0000011)
 
+(defn reset []
+  (send-to-launchpad reset-msg))
+
 (comment
   ;; clear all
-  (send-to-launchpad reset)
+  (send-to-launchpad reset-msg)
   (disco)
   ;; no more disco
   (do (stop)
@@ -155,7 +161,7 @@
   [t ns p]
   (at t
       (println "tick")
-      (send-to-launchpad reset)
+      (reset)
       (when-let [n (get @ns p)]
         (println n)
         (click n)
@@ -171,7 +177,7 @@
 
   (stop)
 
-  (send-to-launchpad reset)
+  (reset)
 
   (defonce mystuff (chan 8))
 
@@ -182,7 +188,7 @@
 
 
 (defn record-note [note]
-  (send-to-launchpad reset)
+  (reset)
   (click note)
   (midi-note-on launch-out note green3)
   (show-step (count @notes))
