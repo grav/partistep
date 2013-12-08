@@ -1,7 +1,6 @@
 (ns overtone-fun.launchpad
   (:require [overtone.midi :as midi])
   (:require [overtone.live :as overtone :refer :all :exclude [buffer]])
-  (:require [clojure.core.async :as a :refer :all])
   (:import [javax.sound.midi ShortMessage]))
 
 
@@ -20,25 +19,12 @@
   ;; seems to be necessary in 0.9.0
   (midi-find-connected-receiver #"Launchpad"))
 
-;; channels for midi in and out,
-;; and event-handlers putting stuff on the channels.
-;; helps avoiding one big handler function that does everything.
-(defonce input (chan))
-
-(defonce input-off (chan))
-
 (on-event
  [:midi :note-on]
  (fn [e]
-   (go (>! input  e)))
+   (when (< (count @notes) 8)
+     (record-note (:note e))))
  ::lanchpad-input-handler)
-
-(on-event
- [:midi :note-off]
- (fn [e]
-   (go (>! input-off e)))
- ::launchpad-input-off-handler)
-
 
 ;; dims of launchpad
 (def W 8)
@@ -155,33 +141,6 @@
                 (sample))]
     (snd)))
 
-(comment
-  ;; Testing out the click sounds using the launchpad. Random color feedback.
-  (go (while true
-       (when-let [e (<! input)]
-         (click (:note e))
-         (midi-note-on launch-out (:note e) (rand-nth [green3 red3 (bit-or green3 red3)])))))
-
- (go (while true
-       (when-let [e (<! input-off)]
-         (midi-note-off launch-out (:note e))))))
-
-(defn kit
-  []
-  (let [t (now)
-        n (rand-nth (flatten (map (fn [x n] (repeat n x)) (range) [1 3 1 3 6 2 5 4])))]
-    (click n)
-    (at t
-        (go (>! input {:note n})))
-    (at (+ t 40)
-        (go (>! input-off {:note n})))
-    (apply-at (+ t 200) #'kit)))
-
-#_(kit)
-
-#_(stop)
-
-
 (def notes (atom (vec (repeat 8 nil))))
 
 (def mylist [1 2 3])
@@ -222,27 +181,17 @@
     (go (>! mystuff {:note 34}))))
 
 
-(defn recorder
-  [ns c]
-  (go
-   (println "Recording ...")
-   (while (< (count @ns) 8)
-     (when-let [e (<! c)]
-       (let [note (:note e)]
-         (send-to-launchpad reset)
-         (click note)
-         (midi-note-on launch-out note green3)
-         (show-step (count @ns))
-         (swap! ns #(conj % note)))))
-;   (close! c)
-   (println "Done.")))
-
+(defn record-note [note]
+  (send-to-launchpad reset)
+  (click note)
+  (midi-note-on launch-out note green3)
+  (show-step (count @notes))
+  (swap! notes #(conj % note)))
 
 (comment
   (swap! notes (fn [m] (assoc m 0 nil)))
 
   (reset! notes [1 3 4 1 2 3 6 5])
-
 
   (player (now) notes 0)
 
@@ -251,5 +200,4 @@
   (stop)
 
   (reset! notes [])
-
-  (recorder notes input))
+)
