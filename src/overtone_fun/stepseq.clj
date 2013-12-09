@@ -86,7 +86,7 @@
 
 (defn infinite
   [a]
-  (->> (repeatedly (fn [] @a))
+  (->> (repeatedly (fn [] (lazy-seq @a)))
        (apply concat )))
 
 
