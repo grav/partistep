@@ -15,11 +15,12 @@
   [note 60 p1 1 p2 0 p3 0 p4 0 p5 0 p6 0 p7 0 p8 0]
   (*
    (let [f (midicps note)
-
+         fs (map #(* % f) (range 1 9 (/ 3 5) ))
          partials (->> [p1 p2 p3 p4 p5 p6 p7 p8]
                        ;; todo - change range to something more interesting
-;                       (map vector (range 1 9 (/ 3 5)))
-                       (map vector (iterate #(* % (/ (+ 1 (Math/sqrt 5)) 2)) f)))
+;                       (map vector fs)
+                       (map vector (iterate #(* % (/ (+ 1 (Math/sqrt 9)) 2)) f))
+                       )
          oscs (for [[pf v] partials]
                 (* v (sin-osc pf)))]
         (apply + oscs))

@@ -1,10 +1,11 @@
 (ns overtone-fun.stepseq
   (:require [overtone.live :as overtone :refer :all]
             [overtone-fun.launchpad :as l]
-            [overtone-fun.util :as u]))
+            [overtone-fun.util :as u]
+            [overtone.music.pitch :as p]))
 
 
-(def val->note [60 62 64 65 67 69 71 72])
+(def val->note [:i :ii :iii :iv :v :vi :vii :i])
 
 (defn tile-conf-nocache [s]
   (-> (for [i (take 8 (iterate dec 8))]
@@ -37,19 +38,28 @@
               last-row-marked)
         (flatten))))
 
+(defn mod-get
+  [coll p]
+  (get coll (mod p (count coll))))
+
 (defn player
-  [t ns p old-conf]
+  [t ns ps p old-conf]
   (let [conf (tile-conf @my-sequence)
-        mod-p (mod p (count @ns))
-        marked-conf (mark-conf conf mod-p)]
+        marked-conf (mark-conf conf (mod p (count @ns)))]
     (l/show old-conf marked-conf)
-    (when-let [n (get @ns mod-p)]
+    (when-let [n (mod-get @ns p)]
       (when (not (zero? n))
-        (let [note (get val->note (dec n))
-              partials [1 0.2 0.3 0.5]]
-          (apply u/beep-partial (cons note partials)))))
-    (let [t' (+ t 200)]
-      (apply-by t' #'player [t' ns (inc p) marked-conf]))))
+        (let [_ (println (dec n))
+              degree (get val->note (dec n))
+              note (-> (first (p/degrees->pitches [degree] :minor :F3))
+                       (+ (* 12 (int (/ n 8))))) ;; octave
+              partials (mod-get @ps p)]
+          (apply u/beep-partial (cons note partials))
+          )))
+    (let [t' (+ t 150)]
+      (apply-by t' #'player [t' ns ps (inc p) marked-conf]))))
+
+(int (/ 7 8))
 
 (on-event
  [:midi :note-on]
@@ -64,10 +74,24 @@
          (update-and-show new-conf)))))
  ::lanchpad-input-handler)
 
+(def partials (atom [[1 0 0.1 0]
+                     [1 0.3 0 0]
+                     [1 0 0.5 0]
+                     [1 0 0 0.2]]))
+
+(reset! partials [[1 0 0.2 0]
+                  [1 0.2 0.0 1.0]
+                  [1 0.3 0.5 0]
+                  ])
+
 (comment
   (do
     (reset! my-sequence (vec (repeat 8 0)))
     (l/reset))
 
-  (player (now) my-sequence 0 (tile-conf @my-sequence))
+  (player (now) my-sequence partials 0 (tile-conf @my-sequence))
   (stop))
+
+(p/note :C4)
+
+(p/resolve-scale :major)
