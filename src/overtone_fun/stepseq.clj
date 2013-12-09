@@ -40,16 +40,16 @@
 (defn player
   [t ns p old-conf]
   (let [conf (tile-conf @my-sequence)
-        marked-conf (mark-conf conf p)]
+        mod-p (mod p (count @ns))
+        marked-conf (mark-conf conf mod-p)]
     (l/show old-conf marked-conf)
-    (when-let [n (get @ns p)]
+    (when-let [n (get @ns mod-p)]
       (when (not (zero? n))
-        (let [note (get val->note (dec n))]
-
-          (u/beep-partial note 1 0.5))))
-    (let [t' (+ t 200)
-          steps (count @ns)]
-      (apply-by t' #'player [t' ns (mod (inc p) steps) marked-conf]))))
+        (let [note (get val->note (dec n))
+              partials [1 0.2 0.3 0.5]]
+          (apply u/beep-partial (cons note partials)))))
+    (let [t' (+ t 200)]
+      (apply-by t' #'player [t' ns (inc p) marked-conf]))))
 
 (on-event
  [:midi :note-on]
