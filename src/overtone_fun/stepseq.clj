@@ -45,19 +45,21 @@
 (defn player
   [t ns ps p old-conf]
   (let [conf (tile-conf @my-sequence)
-        marked-conf (mark-conf conf (mod p (count @ns)))]
+        marked-conf (mark-conf conf p)
+        n (first ns)]
+    ;; update status
     (l/show old-conf marked-conf)
-    (when-let [n (mod-get @ns p)]
-      (when (not (zero? n))
-        (let [_ (println (dec n))
-              degree (get val->note (dec n))
-              note (-> (first (p/degrees->pitches [degree] :minor :F3))
-                       (+ (* 12 (int (/ n 8))))) ;; octave
-              partials (mod-get @ps p)]
-          (apply u/beep-partial (cons note partials))
-          )))
+    (when (not (zero? n))
+      ;; play tone
+      (let [_ (println (dec n))
+            partials (first ps)
+            degree (get val->note (dec n))
+            note (-> (first (p/degrees->pitches [degree] :minor :F3))
+                     (+ (* 12 (int (/ n 8))))) ;; octave
+            ]
+        (apply u/beep-partial (cons note partials))))
     (let [t' (+ t 150)]
-      (apply-by t' #'player [t' ns ps (inc p) marked-conf]))))
+      (apply-by t' #'player [t' (rest ns) (rest ps) (mod (inc p) 8) marked-conf]))))
 
 (int (/ 7 8))
 
@@ -84,12 +86,23 @@
                   [1 0.3 0.5 0]
                   ])
 
+(defn infinite
+  [a]
+  (->> (repeatedly (fn [] @a))
+       (apply concat )))
+
+
+
 (comment
   (do
     (reset! my-sequence (vec (repeat 8 0)))
     (l/reset))
 
-  (player (now) my-sequence partials 0 (tile-conf @my-sequence))
+  (player (now)
+          (infinite my-sequence)
+          (infinite partials)
+          0
+          (tile-conf @my-sequence))
   (stop))
 
 (p/note :C4)
