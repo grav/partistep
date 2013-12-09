@@ -45,11 +45,11 @@
     (when-let [n (get @ns p)]
       (when (not (zero? n))
         (let [note (get val->note (dec n))]
-          (at t
-              (u/beep-partial note)))))
+
+          (u/beep-partial note 1 0.5))))
     (let [t' (+ t 200)
           steps (count @ns)]
-      (apply-at t' #'player [t' ns (mod (inc p) steps) marked-conf]))))
+      (apply-by t' #'player [t' ns (mod (inc p) steps) marked-conf]))))
 
 (on-event
  [:midi :note-on]
