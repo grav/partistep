@@ -61,8 +61,6 @@
     (let [t' (+ t 150)]
       (apply-by t' #'player [t' (rest ns) (rest ps) (mod (inc p) 8) marked-conf]))))
 
-(int (/ 7 8))
-
 (on-event
  [:midi :note-on]
  (fn [e]
