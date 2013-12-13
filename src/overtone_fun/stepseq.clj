@@ -1,6 +1,7 @@
 (ns overtone-fun.stepseq
   (:require [overtone.live :as overtone :refer :all]
             [overtone-fun.launchpad :as l]
+            [overtone-fun.synth :as s]
             [overtone-fun.util :as u]
             [overtone.music.pitch :as p]))
 
@@ -158,10 +159,10 @@
       ;; play tone
       (let [partials (first ps)
             degree (get val->note (dec n))
-            note (-> (first (p/degrees->pitches [degree] :minor :D3))
+            note (-> (first (p/degrees->pitches [degree] :minor :F3))
                      (+ (* 12 (int (/ n 8))))) ;; octave
             ]
-        (apply u/beep-partial (cons note partials))))
+        (apply s/beep-partial (cons note partials))))
     (let [t' (+ t 150)]
       (apply-by t' #'player [t' (rest ns) (rest ps) (inc p) marked-conf]))))
 
@@ -170,21 +171,36 @@
 (do
     (reset! melody [0 0 0 0 0 0 0 0])
     (reset! partials [[1 0 0.2 0]
-;                      [1 0.2 0.0 1.0]
+                      [1 0.2 0.0 1.0]
 ;                      [1 0.3 0.5 0]
-                      [1 0.3 0.5 0]
+;                      [1 0.3 0.5 0]
                       [1 0.3 0.5 0]
                       ])
     (reset! mode :partials)
     (l/reset))
 
+;; We can use the function below for random partials
+;; by supplying
+;;  (apply concat (repeatedly #'random-partials))
+;; as partials-argument to the player fn
+;; The random partials aren't visualized, though.
+(defn random-partials
+    []
+    [(map #(* % 0.5 (rand)) (repeat 4 1))])
+
 (comment
 
-
   (player (now)
-          (u/infinite melody)
-          (u/infinite partials)
-          0
-          (conf-now @mode))
+          (u/infinite melody) ; melody
+          (u/infinite partials) ; partials
+          0 ; pointer :-/
+          (conf-now @mode) ; old conf
+          )
 
-  (stop))
+  (stop)
+
+  ;; fun stuff
+  (swap! melody reverse)
+
+
+  )
