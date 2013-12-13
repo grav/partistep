@@ -4,6 +4,11 @@
             [overtone-fun.util :as u]
             [overtone.music.pitch :as p]))
 
+(def partials (atom nil))
+
+(def melody (atom nil))
+
+(def mode (atom nil))
 
 (def val->note [:i :ii :iii :iv :v :vi :vii :i])
 
@@ -57,11 +62,10 @@
        (map partial-vol)
        (map partial-col)))
 
-(l/show (tile-conf @my-sequence) (tile-conf-partials []))
+(def tile-conf (memoize tile-conf-nocache))
 
 (partial-vol 1)
 
-(def tile-conf (memoize tile-conf-nocache))
 
 (defn midinote->step
   [m]
@@ -70,11 +74,9 @@
      :val  (- 8 (int (/ t 8)))}))
 
 
-(def my-sequence (atom (vec (repeat 8 0))))
-
 (defn update-and-show
   [new-conf]
-  (l/show (tile-conf @my-sequence) new-conf))
+  (l/show (tile-conf @melody) new-conf))
 
 
 ;; returns new sequence that has step p marked
@@ -91,10 +93,64 @@
   [coll p]
   (get coll (mod p (count coll))))
 
+(defn conf-now
+  [mode]
+  (case mode
+    :partials (tile-conf-partials @partials)
+    :melody (tile-conf @melody)))
+
+(defn p-now
+  [mode p]
+  (case mode
+    :partials (mod p (count @partials))
+    :melody (mod p (count @melody))))
+
+(defn handle-event-note
+  [e]
+  (let [{:keys [step val]} (midinote->step (:note e))]
+    (let [existing-val (get @melody step)
+          new-val (if (= val existing-val)
+                    0
+                    val)
+          new-melody (assoc @melody step new-val)]
+      (l/show (tile-conf @melody)
+              (tile-conf new-melody))
+      (reset! melody new-melody))))
+
+(defn midinote->partial
+  [m]
+  (let [t (l/midinote->tile m)
+        p {:step  (mod t 8)
+           :partial  (- 7 (int (/ t 8)))}]
+    (when (< (:partial p) 4)
+      p)))
+
+
+(defn handle-event-partial
+  [e]
+  (when-let [{:keys [step partial]} (midinote->partial (:note e))]
+    (let [old-partials @partials
+          next-vol (->> (get-in @partials [step partial])
+                        (partial-vol)
+                        (next-partial-vol)
+                        ((clojure.set/map-invert partial-vol-tbl)))
+          new-partials (assoc-in old-partials [step partial] next-vol)]
+      (l/show (tile-conf-partials old-partials)
+              (tile-conf-partials new-partials))
+      (reset! partials new-partials))))
+
+(on-event
+ [:midi :note-on]
+ (fn [e]
+   (case @mode
+     :partials (handle-event-partial e)
+     :melody (handle-event-note e)))
+  ::launchpad-input-handler)
+
 (defn player
   [t ns ps p old-conf]
-  (let [conf (tile-conf-partials @partials)
-        marked-conf (mark-conf conf (mod p (count @partials)))
+  (let [conf (conf-now @mode)
+        marked-conf (mark-conf conf (p-now @mode p))
         n (first ns)]
     ;; update status
     (l/show old-conf marked-conf)
@@ -109,71 +165,26 @@
     (let [t' (+ t 150)]
       (apply-by t' #'player [t' (rest ns) (rest ps) (inc p) marked-conf]))))
 
-;; disabled for now
-#_(on-event
- [:midi :note-on]
- (fn [e]
-   (let [{:keys [step val]} (midinote->step (:note e))]
-     (let [existing-val (get @my-sequence step)
-           new-val (if (= val existing-val)
-                     0
-                     val)]
-       (swap! my-sequence #(assoc % step new-val))
-       (let [new-conf (tile-conf @my-sequence)]
-         (update-and-show new-conf)))))
- ::lanchpad-input-handler)
 
-(defn midinote->partial
-  [m]
-  (let [t (l/midinote->tile m)
-        p {:step  (mod t 8)
-           :partial  (- 7 (int (/ t 8)))}]
-    (when (< (:partial p) 4)
-      p)))
 
-(on-event
- [:midi :note-on]
- (fn [e]
-   (when-let [{:keys [step partial]} (midinote->partial (:note e))]
-     (let [old-partials @partials
-           next-vol (->> (get-in @partials [step partial])
-                         (partial-vol)
-                         (next-partial-vol)
-                         ((clojure.set/map-invert partial-vol-tbl)))
-           new-partials (assoc-in old-partials [step partial] next-vol)]
-       (l/show (tile-conf-partials old-partials)
-               (tile-conf-partials new-partials))
-       (reset! partials new-partials))))
- ::launchpad-input-handler)
-
-(def partials (atom [[1 0 0.1 0]
-                     [1 0.3 0 0]
-                     [1 0 0.5 0]
-                     [1 0 0 0.2]]))
-
-(reset! partials [[1 0 0.2 0]
-                  [1 0.2 0.0 1.0]
-                  [1 0.3 0.5 0]
-                  [1 0.3 0.5 0]
-                  [1 0.3 0.5 0]])
-
-(defn infinite
-  [a]
-  (->> (repeatedly (fn [] (lazy-seq @a)))
-       (apply concat )))
-
-(reset! partials (take 3 @partials))
-
-(reset! my-sequence [1 2 3 4 5 6 7 8])
-
-(comment
-  (do
-    (reset! my-sequence (vec (repeat 8 0)))
+(do
+    (reset! melody [0 0 0 0 0 0 0 0])
+    (reset! partials [[1 0 0.2 0]
+;                      [1 0.2 0.0 1.0]
+;                      [1 0.3 0.5 0]
+                      [1 0.3 0.5 0]
+                      [1 0.3 0.5 0]
+                      ])
+    (reset! mode :partials)
     (l/reset))
 
+(comment
+
+
   (player (now)
-          (infinite my-sequence)
-          (infinite partials)
+          (u/infinite melody)
+          (u/infinite partials)
           0
-          (tile-conf @my-sequence))
+          (conf-now @mode))
+
   (stop))

@@ -16,7 +16,9 @@
   (*
    (let [f (midicps note)
          fs (map #(* % f) (range 1 9 (/ 3 5) ))
-         partials (->> [p1 p2 p3 p4 p5 p6 p7 p8]
+         partial-vols [p1 p2 p3 p4 p5 p6 p7 p8]
+         partial-vols-norm (-> (apply + partial-vols))
+         partials (->> partial-vols
                        ;; todo - change range to something more interesting
 ;                       (map vector fs)
                        (map vector (iterate #(* % (/ (+ 1 (Math/sqrt 9)) 2)) f))
@@ -53,25 +55,34 @@
  (defn make-partials
    [] @partials)
 
-
-;; === Let's have some sound
-;; using #'make-partials allows us to redefine it (below)
-(foo (apply concat (repeatedly make-notes)) (apply concat (repeatedly #'make-partials)))
-
-;; === Let's not
-;; (stop)
+(defn infinite
+  "return an infinite list of repeated evaluations of a function that returns
+   the value of @a"
+  [a]
+  (->> (repeatedly (fn [] (lazy-seq @a)))
+       (apply concat)))
 
 (comment
- ;; apply a function on existing params
- (swap! notes reverse)
+  ;; === Let's have some sound
+  ;; using #'make-partials allows us to redefine it (below)
 
- ;; or set them to new values
- ;; wow - polyrhythm
- (reset! partials [[1 0 0.1 1]
-                   [1 0.3 0.4 0]
-                   [0 1.0 0.5 0]])
+  (foo (apply concat (repeatedly make-notes)) (apply concat (repeatedly #'make-partials)))
 
- ;; we don't need to use constants. How about like randomness?
- (defn make-partials
-   []
-   [(map #(* % 0.5 (rand)) (repeat 4 1))]))
+  ;; === Let's not
+  (stop)
+  ;; apply a function on existing params
+  (swap! notes reverse)
+
+  ;; or set them to new values
+  ;; wow - polyrhythm
+  (reset! partials [[1 0 0.1 1]
+                    [1 0.3 0.4 0]
+                    [0 1.0 0.5 0]])
+
+  ;; we don't need to use constants. How about like randomness?
+  (defn make-partials
+    []
+    [(map #(* % 0.5 (rand)) (repeat 4 1))])
+
+
+  )
