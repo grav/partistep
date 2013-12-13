@@ -166,7 +166,11 @@
     (let [t' (+ t 150)]
       (apply-by t' #'player [t' (rest ns) (rest ps) (inc p) marked-conf]))))
 
-
+(defn change-mode
+  [mode]
+  (case mode
+    :melody :partials
+    :partials :melody))
 
 (do
     (reset! melody [0 0 0 0 0 0 0 0])
@@ -176,7 +180,7 @@
 ;                      [1 0.3 0.5 0]
                       [1 0.3 0.5 0]
                       ])
-    (reset! mode :partials)
+    (reset! mode :melody)
     (l/reset))
 
 ;; We can use the function below for random partials
@@ -198,6 +202,9 @@
           )
 
   (stop)
+
+  ;; change mode
+  (swap! mode change-mode)
 
   ;; fun stuff
   (swap! melody reverse)
