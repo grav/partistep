@@ -4,5 +4,5 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[overtone "0.9.1"]
-                 [org.clojure/clojure "1.5.1"]
+                 [org.clojure/clojure "1.5.1"]]
   :repl-options {:port 4555})
