@@ -5,6 +5,16 @@
             [overtone-fun.util :as u]
             [overtone.music.pitch :as p]))
 
+;; ==============
+;;   SEQUENCER
+;; ==============
+;; This is a step sequencer that can step through
+;; melody and the partials.
+;; The number of melody steps and partial steps
+;; does not have to be equal. This can be used
+;; for making polyrhythmic melodies.
+
+
 (def partials (atom nil))
 
 (def melody (atom nil))
