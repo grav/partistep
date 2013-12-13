@@ -158,7 +158,7 @@
       ;; play tone
       (let [partials (first ps)
             degree (get val->note (dec n))
-            note (-> (first (p/degrees->pitches [degree] :minor :F3))
+            note (-> (first (p/degrees->pitches [degree] :minor :D3))
                      (+ (* 12 (int (/ n 8))))) ;; octave
             ]
         (apply u/beep-partial (cons note partials))))
