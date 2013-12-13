@@ -82,11 +82,11 @@
 ;; returns new sequence that has step p marked
 (defn mark-conf
   [conf p]
-  (let [last-row (vec (last (partition 8 conf)))
-        value-marked (bit-or l/red2 (get last-row p))
-        last-row-marked (assoc last-row p value-marked)]
-    (-> (conj (vec (take (* 8 7) conf))
-              last-row-marked)
+  (let [first-row (vec (first (partition 8 conf)))
+        value-marked (bit-or l/red2 (get first-row p))
+        first-row-marked (assoc first-row p value-marked)]
+    (-> (cons first-row-marked
+              (vec (drop 8 conf)))
         (flatten))))
 
 (defn mod-get
