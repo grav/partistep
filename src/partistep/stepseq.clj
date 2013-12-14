@@ -121,7 +121,7 @@
           new-val (if (= val existing-val)
                     0
                     val)
-          new-melody (assoc @melody step new-val)]
+          new-melody (assoc (vec @melody) step new-val)]
       (l/show (tile-conf @melody)
               (tile-conf new-melody))
       (reset! melody new-melody))))
@@ -198,7 +198,8 @@
                     [1 0.3 0.5 0]
                     ])
   (reset! mode :melody)
-  (l/reset))
+  (l/reset)
+  (l/show (repeat 64 0) (conf-now @mode)))
 
 ;; We can use the function below for random partials
 ;; by supplying
