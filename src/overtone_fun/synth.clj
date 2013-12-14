@@ -7,13 +7,14 @@
   (*
    (let [add-half #(+ % (* % (/ 1 2))) ;; these must be defined in the definst macro
          double #(* % 2)
+         add-self (fn [f] #(+ % f))
          f (midicps note)
          fs (map #(* % f) (range 1 9 (/ 3 5) ))
          partial-vols [p1 p2 p3 p4 p5 p6 p7 p8]
          norm (-> (apply + partial-vols)
                   (/ 8))
          partials (->> (* partial-vols norm)
-                       (map vector (iterate double f))
+                       (map vector (iterate (add-self f) f))
                        )
          oscs (for [[pf v] partials]
                 (* v (sin-osc pf)))]
