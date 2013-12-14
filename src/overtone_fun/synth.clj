@@ -5,7 +5,7 @@
 (definst beep-partial
   [note 60 p1 1 p2 0 p3 0 p4 0 p5 0 p6 0 p7 0 p8 0]
   (*
-   (let [add-half #(+ % (* % (/ 1 2))) ;; these must be defined in the definst macro
+   (let [add-half #(+ % (* % (/ 1 2))) ;; these must be defined within the definst macro
          double #(* % 2)
          add-self (fn [f] #(+ % f))
          f (midicps note)
