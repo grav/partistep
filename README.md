@@ -1,6 +1,6 @@
 # Parti Step
 
-A step sequencer that can sequence both melody and partials (overtones)
+A step sequencer that can sequence both melody and partials (overtones), which can create some quite nice polyrhythmic melodies among other things!
 
 ## Usage
 
