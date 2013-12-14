@@ -8,7 +8,7 @@ Parti Step also contains an interface to the Novation Launchpad so that it's eas
 
 - lein repl
 - connect from emacs
-- compile src/stepsequencer.clj
+- compile src/partistep/stepsequencer.clj
 - see (comment ...) exp in bottom :-)
 
 I'll be making a short video demo soon. Promise!
