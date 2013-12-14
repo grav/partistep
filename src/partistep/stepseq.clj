@@ -189,15 +189,16 @@
     :partials :melody))
 
 (do
-    (reset! melody [0 0 0 0 0 0 0 0])
-    (reset! partials [[1 0 0.2 0]
-                      [1 0.2 0.0 1.0]
-                      [1 0.3 0.5 0]
-                      [1 0.3 0.5 0]
-                      [1 0.3 0.5 0]
-                      ])
-    (reset! mode :melody)
-    (l/reset))
+  (reset! melody (repeatedly 8 #(int (* 9 (rand)))))
+
+  (reset! partials [[1 0 0.2 0]
+                    [1 0.2 0.0 1.0]
+                    [1 0.3 0.5 0]
+                    [1 0.3 0.5 0]
+                    [1 0.3 0.5 0]
+                    ])
+  (reset! mode :melody)
+  (l/reset))
 
 ;; We can use the function below for random partials
 ;; by supplying
@@ -224,8 +225,6 @@
 
   ;; fun stuff
   (swap! melody reverse)
-
-  (reset! melody (repeatedly 8 #(int (* 9 (rand)))))
 
   (reset! partials [[1.0 1.0 ]])
 
