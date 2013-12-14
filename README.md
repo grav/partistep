@@ -1,6 +1,6 @@
-# partistep
+# Parti Step
 
-A Step Sequencer that can sequence both melody and partials (overtones)
+A step sequencer that can sequence both melody and partials (overtones)
 
 ## Usage
 
@@ -8,6 +8,8 @@ A Step Sequencer that can sequence both melody and partials (overtones)
 - connect from emacs
 - compile src/stepsequencer.clj
 - see (comment ...) exp in bottom :-)
+
+I'll be making a short video demo soon. Promise!
 
 ## License
 
