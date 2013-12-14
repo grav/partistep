@@ -156,13 +156,20 @@
               (tile-conf-partials new-partials))
       (reset! partials new-partials))))
 
+(defn handle-right-arrow
+  [{note :note}]
+  (case note
+    8 (swap! mode change-mode)))
+
 (on-event
  [:midi :note-on]
- (fn [e]
-   (case @mode
-     :partials (handle-event-partial e)
-     :melody (handle-event-note e)))
-  ::launchpad-input-handler)
+ (fn [{note :note :as e}]
+   (cond
+    (l/is-tile? note) (case @mode
+                     :partials (handle-event-partial e)
+                     :melody (handle-event-note e))
+    (l/is-right-arrow? note) (handle-right-arrow e)))
+ ::launchpad-input-handler)
 
 (defn player
   [t ns ps p old-conf]
