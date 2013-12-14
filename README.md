@@ -2,6 +2,8 @@
 
 A step sequencer that can sequence both melody and partials (overtones), which can create some quite nice polyrhythmic melodies among other things!
 
+Parti Step also contains an interface to the Novation Launchpad so that it's easy(ish) to use.
+
 ## Usage
 
 - lein repl
