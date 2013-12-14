@@ -1,13 +1,16 @@
-# overtone-fun
+# partistep
 
-A Clojure library designed to ... well, that part is up to you.
+A Step Sequencer that can sequence both melody and partials (overtones)
 
 ## Usage
 
-FIXME
+- lein repl
+- connect from emacs
+- compile src/stepsequencer.clj
+- see (comment ...) exp in bottom :-)
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright © 2013 Betafunk
 
 Distributed under the Eclipse Public License, the same as Clojure.
