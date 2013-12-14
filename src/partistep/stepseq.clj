@@ -1,9 +1,9 @@
 (ns partistep.stepseq
   (:require [overtone.live :as overtone :refer :all]
-            [overtone-fun.launchpad :as l]
-            [overtone-fun.synth :as s]
-            [overtone-fun.util :as u]
-            [overtone.music.pitch :as p]))
+            [overtone.music.pitch :as p]
+            [partistep.launchpad :as l]
+            [partistep.synth :as s]
+            [partistep.util :as u]))
 
 ;; ==============
 ;;   SEQUENCER
