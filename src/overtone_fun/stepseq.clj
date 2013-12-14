@@ -17,6 +17,8 @@
 
 (def partials (atom nil))
 
+(def max-partials 8)
+
 (def melody (atom nil))
 
 (def mode (atom nil))
@@ -63,20 +65,16 @@
 
 (defn tile-conf-partials [ps]
   (->> (let [ps (concat ps
-                        (repeat (- 8 (count ps))
-                                [0 0 0 0 ]))]
-         (for [i [3 2 1 0]]
-           (for [partials ps]
-             (get partials i))))
-       (concat (repeat 4 (repeat 8 0)))
+                        (repeat (- max-partials (count ps))
+                                (repeat max-partials 0)))]
+         (for [i (take max-partials (iterate dec (dec max-partials)))]
+           (for [partials (u/extend-vec ps max-partials)]
+             (get partials i 0))))
        (flatten)
        (map partial-vol)
        (map partial-col)))
 
 (def tile-conf (memoize tile-conf-nocache))
-
-(partial-vol 1)
-
 
 (defn midinote->step
   [m]
@@ -94,7 +92,7 @@
 (defn mark-conf
   [conf p]
   (let [first-row (vec (first (partition 8 conf)))
-        value-marked (bit-or l/red2 (get first-row p))
+        value-marked l/red3
         first-row-marked (assoc first-row p value-marked)]
     (-> (cons first-row-marked
               (vec (drop 8 conf)))
@@ -133,19 +131,27 @@
   (let [t (l/midinote->tile m)
         p {:step  (mod t 8)
            :partial  (- 7 (int (/ t 8)))}]
-    (when (< (:partial p) 4)
+    (when (and
+           (< (:step p) (count @partials))
+           (< (:partial p) max-partials))
       p)))
 
+(defn dprn [& e]
+  (do (print e)
+      e))
 
 (defn handle-event-partial
   [e]
   (when-let [{:keys [step partial]} (midinote->partial (:note e))]
     (let [old-partials @partials
-          next-vol (->> (get-in @partials [step partial])
+          ps (-> (get @partials step)
+                 (u/extend-vec max-partials))
+          next-vol (->> (get ps partial)
                         (partial-vol)
                         (next-partial-vol)
                         ((clojure.set/map-invert partial-vol-tbl)))
-          new-partials (assoc-in old-partials [step partial] next-vol)]
+          new-ps (assoc ps partial next-vol)
+          new-partials (assoc old-partials step new-ps)]
       (l/show (tile-conf-partials old-partials)
               (tile-conf-partials new-partials))
       (reset! partials new-partials))))
@@ -186,8 +192,8 @@
     (reset! melody [0 0 0 0 0 0 0 0])
     (reset! partials [[1 0 0.2 0]
                       [1 0.2 0.0 1.0]
-;                      [1 0.3 0.5 0]
-;                      [1 0.3 0.5 0]
+                      [1 0.3 0.5 0]
+                      [1 0.3 0.5 0]
                       [1 0.3 0.5 0]
                       ])
     (reset! mode :melody)
@@ -200,7 +206,7 @@
 ;; The random partials aren't visualized, though.
 (defn random-partials
     []
-    [(map #(* % 0.5 (rand)) (repeat 4 1))])
+    [(map #(* % 0.5 (rand)) (repeat max-partials 1))])
 
 (comment
 
@@ -219,5 +225,8 @@
   ;; fun stuff
   (swap! melody reverse)
 
+  (reset! melody (repeatedly 8 #(int (* 9 (rand)))))
+
+  (reset! partials [[1.0 1.0 ]])
 
   )
