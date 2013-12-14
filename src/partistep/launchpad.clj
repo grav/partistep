@@ -35,8 +35,12 @@
     (+ (mod m W)
        (* W width-multiplier))))
 
+(defn is-right-arrow? [n]
+  (zero? (-> (- n 8 )
+             (mod W))))
 
-
+(defn is-tile? [n]
+  (> 8 (mod n (* 2 W))))
 
 (defn msg [a b c]
   "Create javax.sound.midi.ShortMessage
