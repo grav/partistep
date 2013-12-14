@@ -1,4 +1,4 @@
-(ns overtone-fun.launchpad
+(ns partistep.launchpad
   (:require [overtone.midi :as midi])
   (:require [overtone.live :as overtone :refer :all :exclude [buffer]])
   (:import [javax.sound.midi ShortMessage]))

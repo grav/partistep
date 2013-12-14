@@ -1,4 +1,4 @@
-(ns overtone-fun.util)
+(ns partistep.util)
 
 (defn take-rand [coll n]
   (take n (shuffle coll) ))

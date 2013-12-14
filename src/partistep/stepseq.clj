@@ -1,4 +1,4 @@
-(ns overtone-fun.stepseq
+(ns partistep.stepseq
   (:require [overtone.live :as overtone :refer :all]
             [overtone-fun.launchpad :as l]
             [overtone-fun.synth :as s]

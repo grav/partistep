@@ -1,4 +1,4 @@
-(ns overtone-fun.synth
+(ns partistep.synth
     (:use [overtone.live]
           [overtone.inst.synth]))
 
