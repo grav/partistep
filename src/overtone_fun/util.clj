@@ -14,3 +14,11 @@
   [a]
   (->> (repeatedly (fn [] (lazy-seq @a)))
        (apply concat)))
+
+(defn extend-vec
+  "append 0 to v such that it has length n"
+  [v n]
+  (->>
+   (concat v (repeat 0))
+   (take n)
+   (vec)))
