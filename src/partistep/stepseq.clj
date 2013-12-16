@@ -25,12 +25,6 @@
 
 (def val->note [:i :ii :iii :iv :v :vi :vii :i])
 
-(defn tile-conf-nocache [s]
-  (-> (for [i (take 8 (iterate dec 8))]
-        (map #(if (= i %) l/green2 0) s))
-      (flatten)))
-
-
 (def partial-vol-tbl
   {0.0 :silent
    0.1 :very-low
@@ -63,6 +57,13 @@
    :medium (bit-or l/green2 l/red1)
    :high l/red2})
 
+(defn tile-conf-nocache [s]
+  (-> (for [i (take 8 (iterate dec 8))]
+        (map #(if (= i %) l/green2 0) s))
+      (flatten)))
+
+(def tile-conf (memoize tile-conf-nocache))
+
 (defn tile-conf-partials [ps]
   (->> (let [ps (concat ps
                         (repeat (- max-partials (count ps))
@@ -73,8 +74,6 @@
        (flatten)
        (map partial-vol)
        (map partial-col)))
-
-(def tile-conf (memoize tile-conf-nocache))
 
 (defn midinote->step
   [m]
@@ -149,6 +148,12 @@
       (l/show (tile-conf-partials new-partials))
       (reset! partials new-partials))))
 
+(defn change-mode
+  [mode]
+  (case mode
+    :melody :partials
+    :partials :melody))
+
 (defn handle-right-arrow
   [{note :note}]
   (case note
@@ -181,12 +186,6 @@
         (apply s/beep-partial (cons note partials))))
     (let [t' (+ t 200)]
       (apply-by t' #'player [t' (rest ns) (rest ps) (inc p)]))))
-
-(defn change-mode
-  [mode]
-  (case mode
-    :melody :partials
-    :partials :melody))
 
 (do
   (reset! melody (repeatedly 8 #(int (* 9 (rand)))))
