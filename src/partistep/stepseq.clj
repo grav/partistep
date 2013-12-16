@@ -165,7 +165,7 @@
  ::launchpad-input-handler)
 
 (defn player
-  [t ns ps p old-conf]
+  [t ns ps p]
   (let [conf (conf-now @mode)
         marked-conf (mark-conf conf (p-now @mode p))
         n (first ns)]
@@ -180,7 +180,7 @@
             ]
         (apply s/beep-partial (cons note partials))))
     (let [t' (+ t 200)]
-      (apply-by t' #'player [t' (rest ns) (rest ps) (inc p) marked-conf]))))
+      (apply-by t' #'player [t' (rest ns) (rest ps) (inc p)]))))
 
 (defn change-mode
   [mode]
@@ -216,7 +216,6 @@
           (u/infinite melody) ; melody
           (u/infinite partials) ; partials
           0 ; pointer :-/
-          (conf-now @mode) ; old conf
           )
 
   (stop)
