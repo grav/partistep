@@ -11,8 +11,8 @@
 (defn infinite
   "return an infinite list of repeated evaluations of a function that returns
    the value of @a"
-  [a]
-  (->> (repeatedly (fn [] (lazy-seq @a)))
+  [f]
+  (->> (repeatedly f)
        (apply concat)))
 
 (defn extend-vec

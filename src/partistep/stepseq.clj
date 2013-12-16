@@ -170,9 +170,13 @@
  ::launchpad-input-handler)
 
 (defn player
-  [t ns ps p]
+  [t ns ps melody-steps partial-steps]
   (let [conf (conf-now @mode)
-        marked-conf (mark-conf conf (p-now @mode p))
+        p  (-> (if (= @mode :melody)
+                 melody-steps
+                 partial-steps)
+               (first))
+        marked-conf (mark-conf conf p)
         n (first ns)]
     ;; update status
     (l/show marked-conf)
@@ -185,13 +189,16 @@
             ]
         (apply s/beep-partial (cons note partials))))
     (let [t' (+ t 200)]
-      (apply-by t' #'player [t' (rest ns) (rest ps) (inc p)]))))
+      (apply-by t' #'player [t' (rest ns) (rest ps) (rest melody-steps) (rest partial-steps)]))))
 
 (do
   (reset! melody (repeatedly 8 #(int (* 9 (rand)))))
 
   (reset! partials [[1 0 0.2 0]
                     [1 0.2 0.0 1.0]
+                    [1 0.3 0.5 0]
+                    [1 0.3 0.5 0]
+                    [1 0.3 0.5 0]
                     [1 0.3 0.5 0]
                     [1 0.3 0.5 0]
                     [1 0.3 0.5 0]
@@ -209,12 +216,22 @@
     []
     [(map #(* % 0.5 (rand)) (repeat max-partials 1))])
 
+(def partial-steps (atom [ 0 1 2]))
+
+(def melody-steps (atom [0 1 2 3 4 5]))
+
+(defn get-from
+  [l-ref]
+  (fn [s]
+    (get (vec @l-ref) s)))
+
 (comment
 
   (player (now)
-          (u/infinite melody) ; melody
-          (u/infinite partials) ; partials
-          0 ; pointer :-/
+          (u/infinite (fn [] (lazy-seq (map (get-from melody) @melody-steps)))) ; melody
+          (u/infinite (fn [] (lazy-seq (map (get-from partials) @partial-steps)))) ; partials
+          (u/infinite (fn [] (lazy-seq @melody-steps)))
+          (u/infinite (fn [] (lazy-seq @partial-steps)))
           )
 
   (stop)
@@ -225,6 +242,4 @@
   ;; fun stuff
   (swap! melody reverse)
 
-  (reset! partials [[1.0 1.0 ]])
-
-  )
+  (reset! partials [[1.0 1.0]]))
