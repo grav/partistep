@@ -14,6 +14,7 @@
 
   (event-debug-off))
 
+(def last-tiles (atom nil))
 
 (defonce launch-out
   ;; seems to be necessary in 0.9.0
@@ -81,16 +82,18 @@
 (defn show
   "display tile config on launchpad. tiles is an array of velocities.
    the mapping from vel to color can be found in the Launchpad Programmer's Reference"
-  [old-tiles tiles]
+  [tiles]
   (swap! buff other-buffer)
   (send-to-launchpad (display-buffer-bytes @buff) )
-  (doseq [[v1 v2 n] (map vector old-tiles tiles (range))]
+  (doseq [[v1 v2 n] (map vector @last-tiles tiles (range))]
     (when (not= v1 v2)
       (let [m (tile->midinote n)]
         (if (> v2 0)
           (midi-note-on launch-out m v2)
           (midi-note-off launch-out m)))))
-  (send-to-launchpad (display-buffer-bytes (other-buffer @buff))))
+  (send-to-launchpad (display-buffer-bytes (other-buffer @buff)))
+  (reset! last-tiles tiles))
+
 
 
 (defn disco
@@ -121,6 +124,7 @@
 (def red3 2r0000011)
 
 (defn reset []
+  (reset! last-tiles (repeat 64 0))
   (send-to-launchpad reset-msg))
 
 (comment

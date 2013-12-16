@@ -83,11 +83,6 @@
      :val  (- 8 (int (/ t 8)))}))
 
 
-(defn update-and-show
-  [new-conf]
-  (l/show (tile-conf @melody) new-conf))
-
-
 ;; returns new sequence that has step p marked
 (defn mark-conf
   [conf p]
@@ -122,8 +117,7 @@
                     0
                     val)
           new-melody (assoc (vec @melody) step new-val)]
-      (l/show (tile-conf @melody)
-              (tile-conf new-melody))
+      (l/show (tile-conf new-melody))
       (reset! melody new-melody))))
 
 (defn midinote->partial
@@ -152,8 +146,7 @@
                         ((clojure.set/map-invert partial-vol-tbl)))
           new-ps (assoc ps partial next-vol)
           new-partials (assoc old-partials step new-ps)]
-      (l/show (tile-conf-partials old-partials)
-              (tile-conf-partials new-partials))
+      (l/show (tile-conf-partials new-partials))
       (reset! partials new-partials))))
 
 (defn handle-right-arrow
@@ -177,7 +170,7 @@
         marked-conf (mark-conf conf (p-now @mode p))
         n (first ns)]
     ;; update status
-    (l/show old-conf marked-conf)
+    (l/show marked-conf)
     (when (not (zero? n))
       ;; play tone
       (let [partials (first ps)
@@ -186,7 +179,7 @@
                      (+ (* 12 (int (/ n 8))))) ;; octave
             ]
         (apply s/beep-partial (cons note partials))))
-    (let [t' (+ t 150)]
+    (let [t' (+ t 200)]
       (apply-by t' #'player [t' (rest ns) (rest ps) (inc p) marked-conf]))))
 
 (defn change-mode
@@ -206,7 +199,7 @@
                     ])
   (reset! mode :melody)
   (l/reset)
-  (l/show (repeat 64 0) (conf-now @mode)))
+  (l/show (conf-now @mode)))
 
 ;; We can use the function below for random partials
 ;; by supplying
