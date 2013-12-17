@@ -13,7 +13,9 @@
 ;; The number of melody steps and partial steps
 ;; does not have to be equal. This can be used
 ;; for making polyrhythmic melodies.
+(def partial-steps (atom [0 1 2 3 4 5 6 7]))
 
+(def melody-steps (atom [0 1 2 3 4 5 6 7]))
 
 (def partials (atom nil))
 
@@ -116,7 +118,7 @@
                     0
                     val)
           new-melody (assoc (vec @melody) step new-val)]
-      (l/show (tile-conf new-melody))
+      (l/show (tile-conf new-melody) [])
       (reset! melody new-melody))))
 
 (defn midinote->partial
@@ -145,7 +147,7 @@
                         ((clojure.set/map-invert partial-vol-tbl)))
           new-ps (assoc ps partial next-vol)
           new-partials (assoc old-partials step new-ps)]
-      (l/show (tile-conf-partials new-partials))
+      (l/show (tile-conf-partials new-partials) [])
       (reset! partials new-partials))))
 
 (defn change-mode
@@ -159,6 +161,24 @@
   (case note
     8 (swap! mode change-mode)))
 
+(defn handle-event-cc
+  [e]
+  (when (l/is-upper-btn? e)
+    (let [steps (case @mode
+                  :melody melody-steps
+                  :partials partial-steps)
+          n (-> (:data1 e)
+                (- 104))]
+      (reset! steps
+              (take (inc n) [0 1 2 3 4 5 6 7 8])))))
+
+(on-event
+ [:midi :control-change]
+ handle-event-cc
+ ::launchpad-cc-handler)
+
+(remove-event-handler ::launchpad-cc-handler)
+
 (on-event
  [:midi :note-on]
  (fn [{note :note :as e}]
@@ -169,17 +189,28 @@
     (l/is-right-arrow? note) (handle-right-arrow e)))
  ::launchpad-input-handler)
 
+(count @(atom '(1 2 3)))
+
 (defn player
-  [t ns ps melody-steps partial-steps]
+  [t ns ps m-steps p-steps]
   (let [conf (conf-now @mode)
         p  (-> (if (= @mode :melody)
-                 melody-steps
-                 partial-steps)
+                 m-steps
+                 p-steps)
                (first))
         marked-conf (mark-conf conf p)
+        n-steps (->
+                 (case @mode
+                   :melody  @melody-steps
+                   :partials @partial-steps)
+                 (count))
+        yellow (bit-or l/green3 l/red2)
+        upper-conf  (concat
+                     (repeat n-steps yellow)
+                     (repeat (- 8 n-steps) 0))
         n (first ns)]
     ;; update status
-    (l/show marked-conf)
+    (l/show marked-conf upper-conf)
     (when (not (zero? n))
       ;; play tone
       (let [partials (first ps)
@@ -189,7 +220,7 @@
             ]
         (apply s/beep-partial (cons note partials))))
     (let [t' (+ t 200)]
-      (apply-by t' #'player [t' (rest ns) (rest ps) (rest melody-steps) (rest partial-steps)]))))
+      (apply-by t' #'player [t' (rest ns) (rest ps) (rest m-steps) (rest p-steps)]))))
 
 (do
   (reset! melody (repeatedly 8 #(int (* 9 (rand)))))
@@ -205,7 +236,7 @@
                     ])
   (reset! mode :melody)
   (l/reset)
-  (l/show (conf-now @mode)))
+  (l/show (conf-now @mode) (repeat 8 0)))
 
 ;; We can use the function below for random partials
 ;; by supplying
@@ -215,10 +246,6 @@
 (defn random-partials
     []
     [(map #(* % 0.5 (rand)) (repeat max-partials 1))])
-
-(def partial-steps (atom [ 0 1 2]))
-
-(def melody-steps (atom [0 1 2 3 4 5]))
 
 (defn get-from
   [l-ref]

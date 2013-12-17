@@ -14,7 +14,23 @@
 
   (event-debug-off))
 
+(def first-upper-cc 104)
+
+(defn is-upper-btn?
+  [{status :status data1 :data1 data2 :data2}]
+  (let [allowed-ccs (->>
+                     (range)
+                     (map #(+ % first-upper-cc))
+                     (take 8)
+                     (set))]
+    (and
+     (= status :control-change)
+     (contains? allowed-ccs data1)
+     (= data2 0x7f))))
+
 (def last-tiles (atom nil))
+
+(def last-upper (atom nil))
 
 (defonce launch-out
   ;; seems to be necessary in 0.9.0
@@ -29,6 +45,10 @@
    return the corresponding midi note."
   [n]
   (+ n (* W (int (/ n H)))))
+
+(defn upper->ctrl-change
+  [n]
+  (+ first-upper-cc n))
 
 (defn midinote->tile
   [m]
@@ -82,9 +102,14 @@
 (defn show
   "display tile config on launchpad. tiles is an array of velocities.
    the mapping from vel to color can be found in the Launchpad Programmer's Reference"
-  [tiles]
+  [tiles upper]
   (swap! buff other-buffer)
   (send-to-launchpad (display-buffer-bytes @buff) )
+  (doseq [[d1 d2 n] (map vector @last-upper upper (range))]
+    (when (not= d1 d2)
+      (let [cc (upper->ctrl-change n)]
+        (midi-control launch-out cc d2))))
+
   (doseq [[v1 v2 n] (map vector @last-tiles tiles (range))]
     (when (not= v1 v2)
       (let [m (tile->midinote n)]
@@ -92,9 +117,10 @@
           (midi-note-on launch-out m v2)
           (midi-note-off launch-out m)))))
   (send-to-launchpad (display-buffer-bytes (other-buffer @buff)))
-  (reset! last-tiles tiles))
+  (reset! last-tiles tiles)
+  (reset! last-upper upper))
 
-
+(reset! last-upper (repeat 8 0))
 
 (defn disco
   "Repeatedly display random colors
@@ -124,6 +150,7 @@
 (def red3 2r0000011)
 
 (defn reset []
+  (reset! last-upper (repeat 8 0))
   (reset! last-tiles (repeat 64 0))
   (send-to-launchpad reset-msg))
 
