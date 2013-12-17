@@ -177,8 +177,6 @@
  handle-event-cc
  ::launchpad-cc-handler)
 
-(remove-event-handler ::launchpad-cc-handler)
-
 (on-event
  [:midi :note-on]
  (fn [{note :note :as e}]
