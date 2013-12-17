@@ -156,10 +156,15 @@
     :melody :partials
     :partials :melody))
 
+(declare play-now)
+
 (defn handle-right-arrow
   [{note :note}]
   (case note
-    8 (swap! mode change-mode)))
+    8 (swap! mode change-mode)
+    104 (stop)
+    120 (play-now)
+    :else nil))
 
 (defn handle-event-cc
   [e]
@@ -169,12 +174,13 @@
                   :partials partial-steps)
           n (-> (:data1 e)
                 (- 104))]
+
       (reset! steps
               (take (inc n) [0 1 2 3 4 5 6 7 8])))))
 
 (on-event
  [:midi :control-change]
- handle-event-cc
+ #'handle-event-cc
  ::launchpad-cc-handler)
 
 (on-event
@@ -250,15 +256,15 @@
   (fn [s]
     (get (vec @l-ref) s)))
 
-(comment
-
-  (player (now)
+(defn play-now
+  []
+  (player (+ 200 (now))
           (u/infinite (fn [] (lazy-seq (map (get-from melody) @melody-steps)))) ; melody
           (u/infinite (fn [] (lazy-seq (map (get-from partials) @partial-steps)))) ; partials
           (u/infinite (fn [] (lazy-seq @melody-steps)))
           (u/infinite (fn [] (lazy-seq @partial-steps)))
-          )
-
+          ))
+(comment
   (stop)
 
   ;; change mode
@@ -268,3 +274,5 @@
   (swap! melody reverse)
 
   (reset! partials [[1.0 1.0]]))
+
+@melody-steps
