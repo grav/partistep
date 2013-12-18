@@ -228,16 +228,7 @@
 
 (do
   (reset! melody (repeatedly 8 #(int (* 9 (rand)))))
-
-  (reset! partials [[1 0 0.2 0]
-                    [1 0.2 0.0 1.0]
-                    [1 0.3 0.5 0]
-                    [1 0.3 0.5 0]
-                    [1 0.3 0.5 0]
-                    [1 0.3 0.5 0]
-                    [1 0.3 0.5 0]
-                    [1 0.3 0.5 0]
-                    ])
+  (reset! partials (vec (repeat 8 [1])))
   (reset! mode :melody)
   (l/reset)
   (l/show (conf-now @mode) (repeat 8 0)))
@@ -258,7 +249,7 @@
 
 (defn play-now
   []
-  (player (+ 200 (now))
+  (player (+ 300 (now))
           (u/infinite (fn [] (lazy-seq (map (get-from melody) @melody-steps)))) ; melody
           (u/infinite (fn [] (lazy-seq (map (get-from partials) @partial-steps)))) ; partials
           (u/infinite (fn [] (lazy-seq @melody-steps)))
@@ -274,5 +265,3 @@
   (swap! melody reverse)
 
   (reset! partials [[1.0 1.0]]))
-
-@melody-steps
