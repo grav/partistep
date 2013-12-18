@@ -5,14 +5,64 @@
             [partistep.synth :as s]
             [partistep.util :as u]))
 
-;; ==============
-;;   SEQUENCER
-;; ==============
-;; This is a step sequencer that can step through
-;; melody and the partials.
-;; The number of melody steps and partial steps
-;; does not have to be equal. This can be used
-;; for making polyrhythmic melodies.
+(comment
+  ;; ==============
+  ;;   PartiStep
+  ;; ==============
+  ;; This is a step sequencer that can sequence both
+  ;; melody and the partials.
+  ;; The number of melody steps and partial steps
+  ;; can be changed individually, which can lead
+  ;; to some weird polyrhythmic patterns.
+
+  ;; To use, connect launchpad (if you have one),
+  ;; start 'lein repl', and connect from emacs. Then compile this namespace.
+
+  ;; -- with launchpad
+  ;; The step sequencer can be started with the lowest right-arrow on the launchpad
+  ;; and stopped with the right-arrow above.
+  ;; You can switch mode between melody and partials using the top-most right-arrow.
+
+  ;; -- without launchpad
+  ;; If you don't have a launchpad,
+  ;; you can play the sequencer by evaluating expressions.
+  ;; Here are a few examples:
+
+  ;; start playing
+  (play-now)
+
+  ;; or don't
+  (stop)
+
+  ;; atoms for sequencing:
+  @melody
+  @partials
+
+  ;; active steps
+  @melody-steps
+  @partial-steps
+
+  ;; alter the melody
+  (swap! melody reverse)
+
+  ;; set the partials
+  (reset! partials [[1.0 1.0]
+                    [0.5 0.2 0.6]
+                    [0.1 0.5 0.3]
+                    [1.0 1.0]
+                    [0.5 0.2 0.6]
+                    [0.1 0.5 0.3]
+                    [1.0 1.0]
+                    [0.5 0.2 0.6]])
+
+  ;; play some of the steps
+  (reset! melody-steps '(0 1 2 3 4))
+
+  (reset! partial-steps '(0 1 2)))
+
+
+;;; ================
+
 (def partial-steps (atom [0 1 2 3 4 5 6 7]))
 
 (def melody-steps (atom [0 1 2 3 4 5 6 7]))
@@ -255,39 +305,3 @@
           (u/infinite (fn [] (lazy-seq @melody-steps)))
           (u/infinite (fn [] (lazy-seq @partial-steps)))
           ))
-(comment
-  ;; if you don't have a launchpad,
-  ;; you can play the sequencer by evaluating expressions.
-  ;; here are a few examples:
-
-  ;; start playing
-  (play-now)
-
-  ;; or don't
-  (stop)
-
-  ;; atoms for sequencing:
-  @melody
-  @partials
-
-  ;; active steps
-  @melody-steps
-  @partial-steps
-
-  ;; alter the melody
-  (swap! melody reverse)
-
-  ;; set the partials
-  (reset! partials [[1.0 1.0]
-                    [0.5 0.2 0.6]
-                    [0.1 0.5 0.3]
-                    [1.0 1.0]
-                    [0.5 0.2 0.6]
-                    [0.1 0.5 0.3]
-                    [1.0 1.0]
-                    [0.5 0.2 0.6]])
-
-  ;; play some of the steps
-  (reset! melody-steps '(0 1 2 3 4))
-
-  (reset! partial-steps '(0 1 2)))
