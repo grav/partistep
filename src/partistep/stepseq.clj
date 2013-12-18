@@ -256,12 +256,38 @@
           (u/infinite (fn [] (lazy-seq @partial-steps)))
           ))
 (comment
+  ;; if you don't have a launchpad,
+  ;; you can play the sequencer by evaluating expressions.
+  ;; here are a few examples:
+
+  ;; start playing
+  (play-now)
+
+  ;; or don't
   (stop)
 
-  ;; change mode
-  (swap! mode change-mode)
+  ;; atoms for sequencing:
+  @melody
+  @partials
 
-  ;; fun stuff
+  ;; active steps
+  @melody-steps
+  @partial-steps
+
+  ;; alter the melody
   (swap! melody reverse)
 
-  (reset! partials [[1.0 1.0]]))
+  ;; set the partials
+  (reset! partials [[1.0 1.0]
+                    [0.5 0.2 0.6]
+                    [0.1 0.5 0.3]
+                    [1.0 1.0]
+                    [0.5 0.2 0.6]
+                    [0.1 0.5 0.3]
+                    [1.0 1.0]
+                    [0.5 0.2 0.6]])
+
+  ;; play some of the steps
+  (reset! melody-steps '(0 1 2 3 4))
+
+  (reset! partial-steps '(0 1 2)))
