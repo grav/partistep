@@ -132,7 +132,8 @@
                                 ;; leaves only color bits intact
                                 ;; Important regarding dbl buffering
                                 2r0110011 ;
-                                (rand-int 128))))
+                                (rand-int 128)))
+          [])
     (apply-at (+ 200 t) #'disco)))
 
 ;; some useful messages
